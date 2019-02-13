@@ -1,15 +1,30 @@
-/*
- * Create a list that holds all of your cards
- */
 
-let cards = Array.from(document.querySelectorAll('.deck .card'))
+//// Initialize variables to hold game play
+const deck = document.querySelector('.deck');
+let numMoves = 0;
+let startTime = undefined;
+let gameCompleted = false;
+let numTiles = 16;
+let openList = [];
+const symbols = ['fa-diamond', 'fa-bomb', 'fa-star', 'fa-leaf', 'fa-bolt', 'fa-bicycle', 'fa-paper-plane', 'fa-cube'];
 
-/*
- * Display the cards on the page
- *   - shuffle the list of cards using the provided "shuffle" method below
- *   - loop through each card and create its HTML
- *   - add each card's HTML to the page
- */
+//// Checks on initilization
+
+// Require number of tiles to be even so that every tile has a match
+if (numTiles % 2 !== 0) {
+  numTiles = numTiles - 1;
+}
+
+
+
+
+// Functions to assist with board initilization
+function createCard(symbol) {
+  card = document.createElement('li');
+  card.className = "card";
+  card.innerHTML = `<i class="fa ${symbol}"></i>`;
+  return card;
+}
 
 // Shuffle function from http://stackoverflow.com/a/2450976
 function shuffle(array) {
@@ -26,15 +41,22 @@ function shuffle(array) {
     return array;
 }
 
-cards = shuffle(cards)
 
-var deck = document.querySelector('.deck')
+// Create list of symbols in gameplay
+const symbolsInGame = symbols.slice(0,numTiles/2);
+const randomizedSymbolList = shuffle([...symbolsInGame, ...symbolsInGame])
 
-for (card of cards) {
-  deck.appendChild(card)
-  card.className = "card show";
-
+// Create HTMLElements associated with symbols and add them to document
+const fragment = document.createDocumentFragment();
+for (symbol of randomizedSymbolList) {
+    const newCard = createCard(symbol);
+    fragment.appendChild(newCard);
 }
+deck.appendChild(fragment);
+
+
+
+
 
 /*
  * set up the event listener for a card. If a card is clicked:
@@ -46,3 +68,75 @@ for (card of cards) {
  *    + increment the move counter and display it on the page (put this functionality in another function that you call from this one)
  *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
  */
+
+function displaySymbol(card) {
+  card.className = "card show";
+};
+
+
+function addToOpenList(card) {
+  openList.push(card);
+  card.className = "card show open"
+};
+
+function onMatch() {
+  for (card of openList) {
+    card.className = "card show match"
+  };
+};
+
+function onMismatch() {
+  for (card of openList) {
+    card.className = "card";
+  }
+};
+
+function cardMatchCheck() {
+  incrementMoveCounter();
+  if (openList[0].firstElementChild.className === openList[1].firstElementChild.className) {
+    onMatch();
+    openList = []
+  }
+  else {
+    setTimeout (function() {
+      onMismatch();
+      openList = [];
+    }, 500);
+  }
+};
+
+function incrementMoveCounter() {
+  moves = document.querySelector('.moves');
+  numMoves = numMoves + 1;
+  moves.innerText = numMoves;
+};
+
+function gameCompleteCheck() {
+  let cardList = document.querySelectorAll('.card');
+  let gameCompleted = true;
+  for (card of cardList) {
+    gameCompleted = gameCompleted && card.classList.contains('match');
+  }
+  return gameCompleted;
+};
+
+deck.addEventListener('click', function(event) {
+  if (event.target.className === "card") {
+    // Start Timer On First Tile Click
+    if (!starttime) {
+      starttime = performance.now();
+    }
+
+    displaySymbol(event.target);
+    addToOpenList(event.target);
+    if (openList.length == 2) {
+     cardMatchCheck();
+    };
+
+    gameCompleted = gameCompleteCheck()
+    if (gameCompleted) {
+      console.log(`Woo! Game completed in ${performance.now() - starttime}`)// TODO Make gamecomplete hovering modal appear with details
+    }
+  }
+
+});

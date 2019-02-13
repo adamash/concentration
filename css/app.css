@@ -107,3 +107,8 @@ h1 {
     float: right;
     cursor: pointer;
 }
+
+.score-panel .timer {
+  text-align: center;
+  margin-left: 10%;
+}
