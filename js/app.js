@@ -3,6 +3,7 @@
 const deck = document.querySelector('.deck');
 let numMoves = 0;
 let startTime = undefined;
+let timeElapsed = undefined;
 let gameCompleted = false;
 let numTiles = 16;
 let openList = [];
@@ -111,6 +112,13 @@ function incrementMoveCounter() {
   moves.innerText = numMoves;
 };
 
+function updateTimer() {
+  if (startTime && !gameCompleted) {
+    timeElapsed = parseFloat((performance.now() - startTime)/1000).toFixed(1);
+    document.querySelector('.timer').innerText = timeElapsed;
+    setTimeout(updateTimer,50);
+  }
+}
 function gameCompleteCheck() {
   let cardList = document.querySelectorAll('.card');
   let gameCompleted = true;
@@ -123,8 +131,9 @@ function gameCompleteCheck() {
 deck.addEventListener('click', function(event) {
   if (event.target.className === "card") {
     // Start Timer On First Tile Click
-    if (!starttime) {
-      starttime = performance.now();
+    if (!startTime) {
+      startTime = performance.now();
+      updateTimer()
     }
 
     displaySymbol(event.target);
@@ -135,7 +144,7 @@ deck.addEventListener('click', function(event) {
 
     gameCompleted = gameCompleteCheck()
     if (gameCompleted) {
-      console.log(`Woo! Game completed in ${performance.now() - starttime}`)// TODO Make gamecomplete hovering modal appear with details
+      console.log(`Woo! Game completed in ${timeElapsed} seconds`)// TODO Make gamecomplete hovering modal appear with details
     }
   }
 
